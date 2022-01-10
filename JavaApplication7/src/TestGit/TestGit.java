@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -17,7 +18,7 @@ import java.util.Scanner;
  */
 public class TestGit {
 
-public static void main(String[] args)throws SQLException {
+    public static void main(String[] args)throws SQLException {
         showavailability();
         filterRooms1();
         //updateRooms(); //user input for room id
@@ -171,6 +172,8 @@ public static void main(String[] args)throws SQLException {
             Scanner in = new Scanner(System.in);
             int guests;
             int beds;
+            int decision;
+            String idbookroom;
             Object[] vroom = validroom.toArray();
             String cmd = "Select * from roomtype where amountOfGuest >= ? and amountOfBed >= ? and roomID in (";
             String temp = "";
@@ -210,6 +213,16 @@ public static void main(String[] args)throws SQLException {
                 
                 System.out.printf("Room number = %s, Number of beds = %d, Number of guests = %d\n", roomid, nobed, noguests);
             }
+            System.out.println("Press 1 if you would like to book a room");
+            decision = in.nextInt();
+            
+            in.nextLine();
+            
+            System.out.println("Please enter the room id of the room you would like to book");
+            idbookroom = in.nextLine();
+            if(decision ==1)
+                bookrooms(idbookroom);
+                
             
                          
             
@@ -281,7 +294,52 @@ public static void main(String[] args)throws SQLException {
               
               
               }*/
-             }
+             } 
             }
+    public static void bookrooms(String roomid) throws SQLException{
+        
+        try(Connection mycon = DriverManager.getConnection("jdbc:mysql://localhost:3306/luckyhoteltest", "root", "")){
+            
+            Scanner in = new Scanner(System.in);
+            
+            System.out.println("Please enter your id");
+            String custid = in.nextLine();
+            
+            Random rand = new Random();
+            
+            String cmd = "UPDATE room set roomStatus = 0 where roomID = ?";
+                    byte[] array = new byte[7]; // length is bounded by 7
+                    new Random().nextBytes(array);
+                    String bookingidrand = "test23445677";
+                    int transactionid = rand.nextInt();
+            PreparedStatement pstmt = mycon.prepareStatement(cmd);
+                    pstmt.setString(1, roomid);
+                    pstmt.executeUpdate();
+            String cmd2 ="UPDATE bookingrooms set bookingID = ?, customerID = ?, roomID = ?, transactionID = ?  where 1";
+            PreparedStatement pstmt2 = mycon.prepareStatement(cmd2);
+            pstmt2.setString(1, bookingidrand);
+            pstmt2.setString(2, custid);
+            pstmt2.setString(3, roomid);
+            pstmt2.setInt(4, transactionid);
+            String cmd3 = "Select * from bookingrooms where room ID = ?";
+            PreparedStatement pstmt3 = mycon.prepareStatement(cmd3);
+            
+                ResultSet myRs = null;
+                    
+                    myRs = pstmt3.executeQuery();
+            while(myRs.next()){
+                String bookingnum = myRs.getString(1);
+                String customderid = myRs.getString(2);
+                String roomnum = myRs.getString(3);
+                int transaction = myRs.getInt(3);
+                
+                System.out.printf("%s,%s, %s, %d \n", bookingnum,customderid, roomnum, transaction);
+            }
+            System.out.println("Congratulations you have made a booking");
+        }
+        
+        
+        
     
+}    
 }
